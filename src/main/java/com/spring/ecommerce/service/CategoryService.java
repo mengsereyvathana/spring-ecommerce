@@ -26,11 +26,11 @@ public class CategoryService {
     public Category getCategoryById(Long id){
         return categoryRepository.findById(id).orElse(null);
     }
-    public void create(Category category) {
-        categoryRepository.save(category);
+    public Category createCategory(Category category) {
+        return categoryRepository.save(category);
     }
 
-    public void edit(Long categoryId, Category updateCategory) throws IOException {
+    public Category editCategory(Long categoryId, Category updateCategory) throws IOException {
         Category category = categoryRepository.findById(categoryId).orElse(null);
         if(category == null){
             throw new IOException("No category is founded");
@@ -38,7 +38,7 @@ public class CategoryService {
         category.setName(updateCategory.getName());
         category.setDescription(updateCategory.getDescription());
         category.setImageUrl(updateCategory.getImageUrl());
-        categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
     public void delete() {

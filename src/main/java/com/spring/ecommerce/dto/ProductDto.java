@@ -14,9 +14,12 @@ import lombok.Setter;
 public class ProductDto {
     private Long id;
     private @NotNull String name;
-    private @NotNull String imageURL;
     private @NotNull double price;
     private @NotNull String description;
+
+    private String image1;
+    private String image2;
+    private String image3;
 
     private @NotNull ProductDetailDto detail;
 

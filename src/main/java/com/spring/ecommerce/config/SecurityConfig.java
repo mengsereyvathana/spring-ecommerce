@@ -34,6 +34,7 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
             "/api/v1/no-auth",
+            "/images/**",
     };
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;

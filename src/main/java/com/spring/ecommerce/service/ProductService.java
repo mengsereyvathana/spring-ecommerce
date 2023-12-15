@@ -9,10 +9,12 @@ import com.spring.ecommerce.entity.ProductDetail;
 import com.spring.ecommerce.exception.ProductNotExistsException;
 import com.spring.ecommerce.repository.ProductDetailRepository;
 import com.spring.ecommerce.repository.ProductRepository;
+import com.spring.ecommerce.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +41,9 @@ public class ProductService {
     public ProductDto getProductDto(Product product) {
         ProductDto productDto = new ProductDto();
         productDto.setDescription(product.getDescription());
-        productDto.setImageURL(product.getImageUrl());
+        productDto.setImage1(product.getImage1());
+        productDto.setImage2(product.getImage2());
+        productDto.setImage3(product.getImage3());
         productDto.setName(product.getName());
         productDto.setPrice(product.getPrice());
         productDto.setId(product.getId());
@@ -68,28 +72,37 @@ public class ProductService {
         return optionalProduct.get();
     }
 
-    public void createProduct(ProductDto productDto, Category category) {
+    public Product createProduct(ProductDto productDto, Category category, MultipartFile[] files) throws IOException {
+        String uploadDir = "./images/products";
+
         ProductDetail productDetail = new ProductDetail();
         productDetail.setColor(productDto.getDetail().getColor());
         productDetail.setSize(productDto.getDetail().getSize());
 
         Product product = new Product();
         product.setDescription(productDto.getDescription());
-        product.setImageUrl(productDto.getImageURL());
+
         product.setName(productDto.getName());
         product.setCategory(category);
         product.setPrice(productDto.getPrice());
         product.setDetail(productDetailRepository.save(productDetail));
 
-        productRepository.save(product);
+        List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
+
+        product.setImage1(fileNames.get(0));
+        product.setImage2(fileNames.get(1));
+        product.setImage3(fileNames.get(2));
+
+        return productRepository.save(product);
     }
 
-    public void updateProduct(ProductDto productDto, Long productId) throws Exception {
+    public Product updateProduct(ProductDto productDto, Long productId, MultipartFile[] files) throws Exception {
+        String uploadDir = "./images/products";
         Optional<Product> optionalProduct  = productRepository.findById(productId);
 
-        // check if product does not exists
+        // check if product exists
         if (optionalProduct.isEmpty()) {
-            throw new Exception("product is not present");
+            throw new Exception("Product is not exist.");
         }
 
         Product existingProduct  = optionalProduct.get();
@@ -97,10 +110,35 @@ public class ProductService {
         Category category = categoryService.getCategoryById(productDto.getCategoryId());
         existingProduct.setCategory(category);
 
-        existingProduct.setDescription(productDto.getDescription());
-        existingProduct.setImageUrl(productDto.getImageURL());
         existingProduct.setName(productDto.getName());
         existingProduct.setPrice(productDto.getPrice());
-        productRepository.save(existingProduct);
+        existingProduct.setDescription(productDto.getDescription());
+
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage1());
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage2());
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage3());
+        List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
+
+        existingProduct.setImage1(fileNames.get(0));
+        existingProduct.setImage2(fileNames.get(1));
+        existingProduct.setImage3(fileNames.get(2));
+
+        return productRepository.save(existingProduct);
+    }
+
+    public Product deleteProduct(Long productId) throws Exception {
+        String uploadDir = "./images/products";
+        Optional<Product> optionalProduct  = productRepository.findById(productId);
+
+        if (optionalProduct.isEmpty()) {
+            throw new Exception("Product is not exist.");
+        }
+
+        Product existingProduct  = optionalProduct.get();
+
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage1());
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage2());
+        FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage3());
+        return productRepository.deleteById(productId);
     }
 }

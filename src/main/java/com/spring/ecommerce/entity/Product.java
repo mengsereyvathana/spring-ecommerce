@@ -2,6 +2,7 @@ package com.spring.ecommerce.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,9 +19,12 @@ public class Product {
     private Long id;
 
     private @NotNull String name;
-    private @NotNull String imageUrl;
     private @NotNull double price;
     private @NotNull String description;
+
+    private String image1;
+    private String image2;
+    private String image3;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "detail_id", referencedColumnName = "id")

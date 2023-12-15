@@ -2,6 +2,7 @@ package com.spring.ecommerce.controller;
 
 import com.spring.ecommerce.common.ApiResponse;
 import com.spring.ecommerce.entity.Category;
+import com.spring.ecommerce.entity.Product;
 import com.spring.ecommerce.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +21,20 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<Category> findAll() {
-        return categoryService.findAll();
+    public ResponseEntity<ApiResponse<List<Category>>> findAll() {
+        return new ResponseEntity<>(new ApiResponse<>(true, "category items", categoryService.findAll()), HttpStatus.CREATED);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse> create(@ModelAttribute Category category) {
-        categoryService.create(category);
-        return new ResponseEntity<>(new ApiResponse(true, "a new category created"), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<Category>> create(@ModelAttribute Category category) {
+        return new ResponseEntity<>(new ApiResponse<>(true, "a new category created", categoryService.createCategory(category)), HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse> edit(@PathVariable("id") Long id, @ModelAttribute Category category) throws IOException {
+    public ResponseEntity<ApiResponse<Category>> edit(@PathVariable("id") Long id, @ModelAttribute Category category) throws IOException {
         if (!categoryService.findById(id)) {
-            return new ResponseEntity<>(new ApiResponse(false, "category does not exists"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse<>(false, "category does not exists", null), HttpStatus.NOT_FOUND);
         }
-        categoryService.edit(id, category);
-        return new ResponseEntity<>(new ApiResponse(true, "category has been updated"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(true, "category has been updated", categoryService.editCategory(id,category)), HttpStatus.OK);
     }
 }
