@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    username: root
+    password: admin123
+    url: jdbc:mysql://localhost:3306/spring_ecommerce
+    driver-class-name:  com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+server:
+  port: 8080
+
+application:
+  security:
+    jwt:
+      secret-key: 6DF6067E7359B39B8A4578B4AB860AA3AD5F837BD8EB7974F3C789206B9B9DA5
+      expiration: 600000000
+      refresh-token:
+        expiration: 604800000
