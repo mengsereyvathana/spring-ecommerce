@@ -5,6 +5,7 @@ import com.spring.ecommerce.dto.ProductDto;
 import com.spring.ecommerce.entity.Category;
 import com.spring.ecommerce.repository.CategoryRepository;
 import com.spring.ecommerce.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/api/v1/admin/product")
+@RequiredArgsConstructor
 public class ProductController {
-    @Autowired
-    private ProductService productService;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final ProductService productService;
+
+    private final CategoryRepository categoryRepository;
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> getProducts() {

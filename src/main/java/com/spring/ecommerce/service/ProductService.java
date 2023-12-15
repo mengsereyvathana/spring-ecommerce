@@ -9,6 +9,7 @@ import com.spring.ecommerce.entity.ProductDetail;
 import com.spring.ecommerce.exception.ProductNotExistsException;
 import com.spring.ecommerce.repository.ProductDetailRepository;
 import com.spring.ecommerce.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
-    @Autowired
-    private ProductRepository productRepository;
 
-    @Autowired
-    private CategoryService categoryService;
+    private final ProductRepository productRepository;
+    private final CategoryService categoryService;
+    private final ProductDetailRepository productDetailRepository;
 
-    @Autowired
-    private ProductDetailRepository productDetailRepository;
     public List<ProductDto> getAllProducts() {
         List<Product> allProducts = productRepository.findAll();
 
