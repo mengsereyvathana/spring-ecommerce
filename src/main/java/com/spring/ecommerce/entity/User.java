@@ -1,5 +1,7 @@
 package com.spring.ecommerce.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.spring.ecommerce.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,13 +31,20 @@ public class User implements UserDetails {
 
     private String email;
 
+    @JsonIgnore
     private String password;
 
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    @OneToMany
     private List<Token> tokens;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private Cart cart;
+
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getAuthorities();
@@ -46,21 +55,25 @@ public class User implements UserDetails {
         return email;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return true;

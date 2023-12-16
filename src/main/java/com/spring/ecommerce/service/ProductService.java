@@ -53,11 +53,11 @@ public class ProductService {
         productDetailDto.setColor(product.getDetail().getColor());
         productDetailDto.setSize(product.getDetail().getSize());
 
-        CategoryDto categoryDto = new CategoryDto();
+        Category categoryDto = new Category();
         categoryDto.setId(product.getCategory().getId());
         categoryDto.setName(product.getCategory().getName());
         categoryDto.setDescription(product.getCategory().getDescription());
-        categoryDto.setImageURL(product.getCategory().getImage());
+        categoryDto.setImage(product.getCategory().getImage());
 
         productDto.setDetail(productDetailDto);
         productDto.setCategory(categoryDto);
@@ -141,5 +141,17 @@ public class ProductService {
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage3());
         productRepository.deleteById(productId);
         return "Product successfully deleted" + productId;
+    }
+
+    public ProductDto getById(Long id) throws IOException {
+        ProductDto productDto = new ProductDto();
+        Product product = productRepository.findById(id).orElse(null);
+        if(product == null) throw new IOException("No product is found");
+        productDto.setId(product.getId());
+        productDto.setName(product.getName());
+        productDto.setDescription(product.getDescription());
+        productDto.setCategory(product.getCategory());
+        productDto.setImage1(product.getImage1());
+        return productDto;
     }
 }

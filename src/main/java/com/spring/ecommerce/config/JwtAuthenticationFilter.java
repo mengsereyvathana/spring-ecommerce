@@ -29,6 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
     private final TokenRepository tokenRepository;
 
+    public static String CURRENT_USER = "";
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -48,6 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         // Extracting information from the access card (JWT).
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
+        CURRENT_USER = userEmail;
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null){
 

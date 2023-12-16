@@ -1,6 +1,7 @@
 package com.spring.ecommerce.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.spring.ecommerce.entity.Category;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,5 +27,5 @@ public class ProductDto {
     @JsonIgnore
     private Long categoryId;
 
-    private @NotNull CategoryDto category;
+    private @NotNull Category category;
 }
