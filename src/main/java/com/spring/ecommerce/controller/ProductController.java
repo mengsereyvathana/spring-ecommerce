@@ -22,7 +22,6 @@ import java.util.Optional;
 public class ProductController {
 
     private final ProductService productService;
-
     private final CategoryRepository categoryRepository;
 
     @GetMapping
@@ -35,24 +34,23 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Product>> createProduct(@ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws IOException {
         Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
         if (optionalCategory.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exists", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exist", null), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ApiResponse<>(true, "Product has been added", productService.createProduct(productDto, optionalCategory.get(), files)), HttpStatus.CREATED);
+        return new ResponseEntity<>(new ApiResponse<>(true, "Product is added", productService.createProduct(productDto, optionalCategory.get(), files)), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{productId}")
-    public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable("productId") Long productId, @ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws Exception {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable("id") Long productId, @ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws Exception {
         Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
         if (optionalCategory.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exists", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exist", null), HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity<>(new ApiResponse<>(true, "Product has been updated", productService.updateProduct(productDto, productId, files)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(true, "Product is updated", productService.updateProduct(productDto, productId, files)), HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete/{productId}")
-    public ResponseEntity<ApiResponse<Product>> deleteProduct(@PathVariable("productId") Long productId) throws Exception {
-        return new ResponseEntity<>(new ApiResponse<>(true, "Product has been updated", productService.deleteProduct(productId)), HttpStatus.OK);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteProduct(@PathVariable("id") Long productId) throws Exception {
+        return new ResponseEntity<>(new ApiResponse<>(true, "Product is deleted", productService.deleteProduct(productId)), HttpStatus.OK);
     }
 }
 

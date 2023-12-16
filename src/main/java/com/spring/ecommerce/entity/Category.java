@@ -20,7 +20,7 @@ public class Category {
 
     private @NotBlank String name;
     private @NotBlank String description;
-    private @NotBlank String imageUrl;
+    private @NotBlank String image;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;

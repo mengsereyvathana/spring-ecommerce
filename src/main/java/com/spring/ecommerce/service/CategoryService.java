@@ -30,14 +30,14 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public Category editCategory(Long categoryId, Category updateCategory) throws IOException {
-        Category category = categoryRepository.findById(categoryId).orElse(null);
-        if(category == null){
+    public Category editCategory(Long categoryId, Category category) throws IOException {
+        Category existingCategory = categoryRepository.findById(categoryId).orElse(null);
+        if(existingCategory == null){
             throw new IOException("No category is founded");
         }
-        category.setName(updateCategory.getName());
-        category.setDescription(updateCategory.getDescription());
-        category.setImageUrl(updateCategory.getImageUrl());
+        existingCategory.setName(category.getName());
+        existingCategory.setDescription(category.getDescription());
+        existingCategory.setImage(category.getImage());
         return categoryRepository.save(category);
     }
 

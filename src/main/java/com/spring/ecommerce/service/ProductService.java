@@ -57,7 +57,7 @@ public class ProductService {
         categoryDto.setId(product.getCategory().getId());
         categoryDto.setName(product.getCategory().getName());
         categoryDto.setDescription(product.getCategory().getDescription());
-        categoryDto.setImageURL(product.getCategory().getImageUrl());
+        categoryDto.setImageURL(product.getCategory().getImage());
 
         productDto.setDetail(productDetailDto);
         productDto.setCategory(categoryDto);
@@ -126,7 +126,7 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
-    public Product deleteProduct(Long productId) throws Exception {
+    public String deleteProduct(Long productId) throws Exception {
         String uploadDir = "./images/products";
         Optional<Product> optionalProduct  = productRepository.findById(productId);
 
@@ -139,6 +139,7 @@ public class ProductService {
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage1());
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage2());
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage3());
-        return productRepository.deleteById(productId);
+        productRepository.deleteById(productId);
+        return "Product successfully deleted" + productId;
     }
 }
