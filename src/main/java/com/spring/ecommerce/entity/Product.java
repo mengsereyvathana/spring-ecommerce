@@ -21,6 +21,7 @@ public class Product {
     private @NotNull String name;
     private @NotNull double price;
     private @NotNull String description;
+    private @NotNull int quantity;
 
     private String image1;
     private String image2;

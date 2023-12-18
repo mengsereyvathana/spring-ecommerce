@@ -10,6 +10,9 @@ import com.spring.ecommerce.repository.ProductRepository;
 import com.spring.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -22,56 +25,41 @@ public class CartService {
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
 
-    public Cart addToCart(Long productId, int quantity) throws IOException {
-//        Product product = productRepository.findById(productId).orElseThrow(() -> new IOException("Product does not exist."));
+    public Cart getCartByUsername(){
 
-//        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
-//        User user = userRepository.findByEmail(userEmail).orElseThrow();
-//
-//        Product existingProduct = productRepository.findById(productId).orElse(null);
-//        if(existingProduct == null) {
-//            throw new IOException("Product does not exist");
-//        }
-//
-//        CartItem cartItem = new CartItem();
-//
-//
-//        Cart cart = new Cart();
-//
-//
-//        return cartRepository.save(cart);
-
-        Product product = productRepository.findById(productId).orElseThrow(() -> new IOException("Product does not exist."));
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
+
+        return user.getCart();
+    }
+
+    public Cart addToCart(ProductDto productDto, int quantity) throws IOException {
+        Product product = transfer(productDto);
+
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+
         Cart shoppingCart = user.getCart();
 
         if(shoppingCart == null){
             shoppingCart = new Cart();
         }
+
         List<CartItem> cartItemList = shoppingCart.getCartItems();
-        CartItem cartItem = find(cartItemList, product.getId());
-
-        double unitPrice = product.getPrice();
-
-        System.out.println("hello owlrdddddddddddddddddddddddd ii" + unitPrice);
+        CartItem cartItem = find(cartItemList, productDto.getId());
 
         int itemQuantity = 0;
+        double unitPrice = productDto.getPrice();
+
         if (cartItemList == null) {
             cartItemList = new ArrayList<>();
-            if (cartItem == null) {
-                cartItem = new CartItem();
-                cartItem.setProduct(product);
-                cartItem.setCart(shoppingCart);
-                cartItem.setQuantity(quantity);
-                cartItem.setUnitPrice(unitPrice);
-                cartItemList.add(cartItem);
-                cartItemRepository.save(cartItem);
-            } else {
-                itemQuantity = cartItem.getQuantity() + quantity;
-                cartItem.setQuantity(itemQuantity);
-                cartItemRepository.save(cartItem);
-            }
+            cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(shoppingCart);
+            cartItem.setQuantity(quantity);
+            cartItem.setUnitPrice(unitPrice);
+            cartItemList.add(cartItem);
+            cartItemRepository.save(cartItem);
         } else {
             if (cartItem == null) {
                 cartItem = new CartItem();
@@ -87,6 +75,7 @@ public class CartService {
                 cartItemRepository.save(cartItem);
             }
         }
+
         shoppingCart.setCartItems(cartItemList);
 
         double totalPrice = totalPrice(shoppingCart.getCartItems());
@@ -99,7 +88,131 @@ public class CartService {
         return cartRepository.save(shoppingCart);
     }
 
-    private CartItem find(List<CartItem> cartItems, long productId) {
+    public Cart minusFromCart(ProductDto productDto, int quantity) throws IOException {
+        Product product = transfer(productDto);
+
+
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+
+        Cart shoppingCart = user.getCart();
+
+        if(shoppingCart == null){
+            shoppingCart = new Cart();
+        }
+
+        List<CartItem> cartItemList = shoppingCart.getCartItems();
+        CartItem cartItem = find(cartItemList, productDto.getId());
+
+        int itemQuantity = 0;
+        double unitPrice = productDto.getPrice();
+
+        if (cartItemList == null) {
+            cartItemList = new ArrayList<>();
+            cartItem = new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(shoppingCart);
+            cartItem.setQuantity(quantity);
+            cartItem.setUnitPrice(unitPrice);
+            cartItemList.add(cartItem);
+            cartItemRepository.save(cartItem);
+        } else {
+            if (cartItem == null) {
+                cartItem = new CartItem();
+                cartItem.setProduct(product);
+                cartItem.setCart(shoppingCart);
+                cartItem.setQuantity(quantity);
+                cartItem.setUnitPrice(unitPrice);
+                cartItemList.add(cartItem);
+                cartItemRepository.save(cartItem);
+            } else {
+                itemQuantity = cartItem.getQuantity() - quantity;
+                cartItem.setQuantity(itemQuantity);
+                cartItemRepository.save(cartItem);
+            }
+        }
+
+        shoppingCart.setCartItems(cartItemList);
+
+        double totalPrice = totalPrice(shoppingCart.getCartItems());
+        int totalItem = totalItem(shoppingCart.getCartItems());
+
+        shoppingCart.setTotalPrice(totalPrice);
+        shoppingCart.setTotalItems(totalItem);
+        shoppingCart.setUser(user);
+
+        return cartRepository.save(shoppingCart);
+    }
+
+    public Cart updateCartItem(ProductDto productDto, int quantity) {
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+        Cart cart = user.getCart();
+
+        List<CartItem> cartItemList = cart.getCartItems();
+        CartItem item = find(cartItemList, productDto.getId());
+
+        item.setQuantity(quantity);
+        cartItemRepository.save(item);
+
+        cart.setCartItems(cartItemList);
+        int totalItem = totalItem(cartItemList);
+        double totalPrice = totalPrice(cartItemList);
+
+        cart.setTotalPrice(totalPrice);
+        cart.setTotalItems(totalItem);
+
+        return cartRepository.save(cart);
+    }
+
+    public String removeItemFromCart(ProductDto productDto) {
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+        Cart cart = user.getCart();
+
+        List<CartItem> cartItemList = cart.getCartItems();
+        CartItem item = find(cartItemList, productDto.getId());
+
+        cartItemList.remove(item);
+        cartItemRepository.delete(item);
+
+        double totalPrice = totalPrice(cartItemList);
+        int totalItem = totalItem(cartItemList);
+
+        cart.setCartItems(cartItemList);
+        cart.setTotalPrice(totalPrice);
+        cart.setTotalItems(totalItem);
+
+        cartRepository.save(cart);
+
+        return "Item is removed from cart";
+    }
+
+    @Transactional
+    public String deleteCartByUsername() {
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+
+        Cart cart = user.getCart();
+
+        if (cart != null) {
+            cartItemRepository.deleteAll(cart.getCartItems());
+
+            cart.getCartItems().clear();
+            cart.setTotalPrice(0);
+            cart.setTotalItems(0);
+
+//            command below will also remove cart from database
+//            user.setCart(null);
+//            cartRepository.save(cart);
+
+            return "Cart is deleted";
+        } else {
+            return "Cart does not exist";
+        }
+    }
+
+    public CartItem find(List<CartItem> cartItems, long productId) {
         if (cartItems == null) {
             return null;
         }
@@ -114,9 +227,11 @@ public class CartService {
 
     private Product transfer(ProductDto productDto) {
         Product product = new Product();
+
         product.setId(productDto.getId());
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
+        product.setQuantity(productDto.getQuantity());
         product.setDescription(productDto.getDescription());
         product.setImage1(productDto.getImage1());
         product.setImage2(productDto.getImage2());
@@ -139,5 +254,23 @@ public class CartService {
             totalItem += item.getQuantity();
         }
         return totalItem;
+    }
+
+    public int getCartQuantity(ProductDto productDto){
+        String userEmail = JwtAuthenticationFilter.CURRENT_USER;
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
+
+        Cart cart = user.getCart();
+
+        if(cart == null){
+            cart = new Cart();
+        }
+        List<CartItem> cartItemList = cart.getCartItems();
+        CartItem cartItem = find(cartItemList, productDto.getId());
+
+        if(cartItem == null){
+            return 0;
+        }
+        return cartItem.getQuantity();
     }
 }

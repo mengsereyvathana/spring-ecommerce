@@ -2,10 +2,8 @@ package com.spring.ecommerce.controller;
 
 import com.spring.ecommerce.common.ApiResponse;
 import com.spring.ecommerce.entity.Category;
-import com.spring.ecommerce.entity.Product;
 import com.spring.ecommerce.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,5 +34,13 @@ public class CategoryController {
             return new ResponseEntity<>(new ApiResponse<>(false, "category does not exists", null), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(new ApiResponse<>(true, "category has been updated", categoryService.editCategory(id,category)), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteCategory(@PathVariable("id") Long id) throws Exception {
+        if(!categoryService.findById(id)) {
+            return new ResponseEntity<>(new ApiResponse<>(false, "category does not exists", null), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(new ApiResponse<>(true, "category has been updated", categoryService.deleteCategory(id)), HttpStatus.OK);
     }
 }

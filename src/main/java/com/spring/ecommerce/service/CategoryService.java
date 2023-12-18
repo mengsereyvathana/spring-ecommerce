@@ -1,13 +1,16 @@
 package com.spring.ecommerce.service;
 
 import com.spring.ecommerce.entity.Category;
+import com.spring.ecommerce.entity.Product;
 import com.spring.ecommerce.repository.CategoryRepository;
+import com.spring.ecommerce.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +44,14 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
-    public void delete() {
+    public String deleteCategory(Long categoryId) throws Exception {
+        Optional<Category> optionalProduct  = categoryRepository.findById(categoryId);
 
+        if (optionalProduct.isEmpty()) {
+            throw new Exception("Category is not exist.");
+        }
+
+        categoryRepository.deleteById(categoryId);
+        return "Category successfully deleted " + categoryId;
     }
 }

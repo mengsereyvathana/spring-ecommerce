@@ -14,9 +14,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductDto {
     private Long id;
+
     private @NotNull String name;
     private @NotNull double price;
     private @NotNull String description;
+    private @NotNull int quantity;
 
     private String image1;
     private String image2;

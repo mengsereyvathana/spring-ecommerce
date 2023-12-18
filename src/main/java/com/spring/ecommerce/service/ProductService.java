@@ -80,11 +80,13 @@ public class ProductService {
         productDetail.setSize(productDto.getDetail().getSize());
 
         Product product = new Product();
-        product.setDescription(productDto.getDescription());
 
         product.setName(productDto.getName());
         product.setCategory(category);
         product.setPrice(productDto.getPrice());
+        product.setQuantity(productDto.getQuantity());
+        product.setDescription(productDto.getDescription());
+
         product.setDetail(productDetailRepository.save(productDetail));
 
         List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
@@ -112,6 +114,7 @@ public class ProductService {
 
         existingProduct.setName(productDto.getName());
         existingProduct.setPrice(productDto.getPrice());
+        existingProduct.setQuantity(productDto.getQuantity());
         existingProduct.setDescription(productDto.getDescription());
 
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage1());
@@ -144,14 +147,19 @@ public class ProductService {
     }
 
     public ProductDto getById(Long id) throws IOException {
-        ProductDto productDto = new ProductDto();
         Product product = productRepository.findById(id).orElse(null);
         if(product == null) throw new IOException("No product is found");
+
+        ProductDto productDto = new ProductDto();
         productDto.setId(product.getId());
         productDto.setName(product.getName());
+        productDto.setPrice(product.getPrice());
         productDto.setDescription(product.getDescription());
+        productDto.setQuantity(product.getQuantity());
         productDto.setCategory(product.getCategory());
         productDto.setImage1(product.getImage1());
+        productDto.setImage2(product.getImage2());
+        productDto.setImage3(product.getImage3());
         return productDto;
     }
 }
