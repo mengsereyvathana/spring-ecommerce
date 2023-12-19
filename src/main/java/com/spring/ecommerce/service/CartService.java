@@ -1,18 +1,18 @@
 package com.spring.ecommerce.service;
 
 import com.spring.ecommerce.config.JwtAuthenticationFilter;
+import com.spring.ecommerce.dto.CartDto;
 import com.spring.ecommerce.dto.ProductDto;
 import com.spring.ecommerce.entity.*;
-import com.spring.ecommerce.enums.TokenType;
+import com.spring.ecommerce.mapper.CartMapper;
+import com.spring.ecommerce.mapper.CategoryMapper;
+import com.spring.ecommerce.mapper.ProductMapper;
 import com.spring.ecommerce.repository.CartItemRepository;
 import com.spring.ecommerce.repository.CartRepository;
-import com.spring.ecommerce.repository.ProductRepository;
 import com.spring.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,31 +21,30 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
 
-    public Cart getCartByUsername(){
+    public CartDto getCartByUsername(){
 
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
 
-        return user.getCart();
+        return cartToDto(user.getCart());
     }
 
-    public Cart addToCart(ProductDto productDto, int quantity) throws IOException {
-        Product product = transfer(productDto);
+    public CartDto addToCart(ProductDto productDto, int quantity) throws IOException {
+        Product product = ProductMapper.mapToProduct(productDto);
 
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
 
-        Cart shoppingCart = user.getCart();
+        Cart cart = user.getCart();
 
-        if(shoppingCart == null){
-            shoppingCart = new Cart();
+        if(cart == null){
+            cart = new Cart();
         }
 
-        List<CartItem> cartItemList = shoppingCart.getCartItems();
+        List<CartItem> cartItemList = cart.getCartItems();
         CartItem cartItem = find(cartItemList, productDto.getId());
 
         int itemQuantity = 0;
@@ -55,7 +54,7 @@ public class CartService {
             cartItemList = new ArrayList<>();
             cartItem = new CartItem();
             cartItem.setProduct(product);
-            cartItem.setCart(shoppingCart);
+            cartItem.setCart(cart);
             cartItem.setQuantity(quantity);
             cartItem.setUnitPrice(unitPrice);
             cartItemList.add(cartItem);
@@ -64,7 +63,7 @@ public class CartService {
             if (cartItem == null) {
                 cartItem = new CartItem();
                 cartItem.setProduct(product);
-                cartItem.setCart(shoppingCart);
+                cartItem.setCart(cart);
                 cartItem.setQuantity(quantity);
                 cartItem.setUnitPrice(unitPrice);
                 cartItemList.add(cartItem);
@@ -76,21 +75,23 @@ public class CartService {
             }
         }
 
-        shoppingCart.setCartItems(cartItemList);
+        cart.setCartItems(cartItemList);
 
-        double totalPrice = totalPrice(shoppingCart.getCartItems());
-        int totalItem = totalItem(shoppingCart.getCartItems());
+        double totalPrice = totalPrice(cart.getCartItems());
+        int totalItem = totalItem(cart.getCartItems());
 
-        shoppingCart.setTotalPrice(totalPrice);
-        shoppingCart.setTotalItems(totalItem);
-        shoppingCart.setUser(user);
+        cart.setTotalPrice(totalPrice);
+        cart.setTotalItems(totalItem);
+        cart.setUser(user);
 
-        return cartRepository.save(shoppingCart);
+        Cart savedCart = cartRepository.save(cart);
+        return CartMapper.mapToCartDto(savedCart);
+
+//        return cartToDto(cartRepository.save(cart));
     }
 
-    public Cart minusFromCart(ProductDto productDto, int quantity) throws IOException {
-        Product product = transfer(productDto);
-
+    public CartDto minusFromCart(ProductDto productDto, int quantity) throws IOException {
+        Product product = ProductMapper.mapToProduct(productDto);
 
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
@@ -141,10 +142,10 @@ public class CartService {
         shoppingCart.setTotalItems(totalItem);
         shoppingCart.setUser(user);
 
-        return cartRepository.save(shoppingCart);
+        return cartToDto(cartRepository.save(shoppingCart));
     }
 
-    public Cart updateCartItem(ProductDto productDto, int quantity) {
+    public CartDto updateCartItem(ProductDto productDto, int quantity) {
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
         Cart cart = user.getCart();
@@ -162,7 +163,7 @@ public class CartService {
         cart.setTotalPrice(totalPrice);
         cart.setTotalItems(totalItem);
 
-        return cartRepository.save(cart);
+        return cartToDto(cartRepository.save(cart));
     }
 
     public String removeItemFromCart(ProductDto productDto) {
@@ -225,21 +226,6 @@ public class CartService {
         return cartItem;
     }
 
-    private Product transfer(ProductDto productDto) {
-        Product product = new Product();
-
-        product.setId(productDto.getId());
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        product.setQuantity(productDto.getQuantity());
-        product.setDescription(productDto.getDescription());
-        product.setImage1(productDto.getImage1());
-        product.setImage2(productDto.getImage2());
-        product.setImage3(productDto.getImage3());
-        product.setCategory(productDto.getCategory());
-        return product;
-    }
-
     private double totalPrice(List<CartItem> cartItemList) {
         double totalPrice = 0.0;
         for (CartItem item : cartItemList) {
@@ -272,5 +258,28 @@ public class CartService {
             return 0;
         }
         return cartItem.getQuantity();
+    }
+
+    private Product dtoToProduct(ProductDto productDto) {
+        Product product = new Product();
+        product.setId(productDto.getId());
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setQuantity(productDto.getQuantity());
+        product.setDescription(productDto.getDescription());
+        product.setImage1(productDto.getImage1());
+        product.setImage2(productDto.getImage2());
+        product.setImage3(productDto.getImage3());
+        product.setCategory(productDto.getCategory());
+        return product;
+    }
+
+    private CartDto cartToDto(Cart cart) {
+        CartDto cartDto = new CartDto();
+        cartDto.setCartItems(cart.getCartItems());
+        cartDto.setId(cart.getId());
+        cartDto.setTotalItems(cart.getTotalItems());
+        cartDto.setTotalPrice(cart.getTotalPrice());
+        return cartDto;
     }
 }

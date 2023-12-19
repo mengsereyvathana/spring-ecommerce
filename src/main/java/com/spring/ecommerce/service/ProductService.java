@@ -1,12 +1,13 @@
 package com.spring.ecommerce.service;
 
-import com.spring.ecommerce.dto.CategoryDto;
 import com.spring.ecommerce.dto.ProductDetailDto;
 import com.spring.ecommerce.dto.ProductDto;
 import com.spring.ecommerce.entity.Category;
 import com.spring.ecommerce.entity.Product;
 import com.spring.ecommerce.entity.ProductDetail;
 import com.spring.ecommerce.exception.ProductNotExistsException;
+import com.spring.ecommerce.mapper.CategoryMapper;
+import com.spring.ecommerce.mapper.ProductMapper;
 import com.spring.ecommerce.repository.ProductDetailRepository;
 import com.spring.ecommerce.repository.ProductRepository;
 import com.spring.ecommerce.util.FileUploadUtil;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,41 +30,37 @@ public class ProductService {
     private final ProductDetailRepository productDetailRepository;
 
     public List<ProductDto> getAllProducts() {
-        List<Product> allProducts = productRepository.findAll();
-
-        List<ProductDto> productDtos = new ArrayList<>();
-        for(Product product: allProducts) {
-            productDtos.add(getProductDto(product));
-        }
-        return productDtos;
+        List<Product> categories = productRepository.findAll();
+        return categories.stream().map(ProductMapper::mapToProductDto).collect(Collectors.toList());
     }
 
 
-    public ProductDto getProductDto(Product product) {
-        ProductDto productDto = new ProductDto();
-        productDto.setDescription(product.getDescription());
-        productDto.setImage1(product.getImage1());
-        productDto.setImage2(product.getImage2());
-        productDto.setImage3(product.getImage3());
-        productDto.setName(product.getName());
-        productDto.setPrice(product.getPrice());
-        productDto.setId(product.getId());
-
-        ProductDetailDto productDetailDto = new ProductDetailDto();
-        productDetailDto.setId(product.getDetail().getId());
-        productDetailDto.setColor(product.getDetail().getColor());
-        productDetailDto.setSize(product.getDetail().getSize());
-
-        Category categoryDto = new Category();
-        categoryDto.setId(product.getCategory().getId());
-        categoryDto.setName(product.getCategory().getName());
-        categoryDto.setDescription(product.getCategory().getDescription());
-        categoryDto.setImage(product.getCategory().getImage());
-
-        productDto.setDetail(productDetailDto);
-        productDto.setCategory(categoryDto);
-        return productDto;
-    }
+//    public ProductDto getProductDto(Product product) {
+//        ProductDto productDto = new ProductDto();
+//        productDto.setDescription(product.getDescription());
+//        productDto.setQuantity(product.getQuantity());
+//        productDto.setImage1(product.getImage1());
+//        productDto.setImage2(product.getImage2());
+//        productDto.setImage3(product.getImage3());
+//        productDto.setName(product.getName());
+//        productDto.setPrice(product.getPrice());
+//        productDto.setId(product.getId());
+//
+//        ProductDetailDto productDetailDto = new ProductDetailDto();
+//        productDetailDto.setId(product.getDetail().getId());
+//        productDetailDto.setColor(product.getDetail().getColor());
+//        productDetailDto.setSize(product.getDetail().getSize());
+//
+//        Category category = new Category();
+//        category.setId(product.getCategory().getId());
+//        category.setName(product.getCategory().getName());
+//        category.setDescription(product.getCategory().getDescription());
+//        category.setImage(product.getCategory().getImage());
+//
+//        productDto.setDetail(productDetailDto);
+//        productDto.setCategory(category);
+//        return productDto;
+//    }
 
     public Product findById(Long productId) throws ProductNotExistsException {
         Optional<Product> optionalProduct = productRepository.findById(productId);
@@ -72,22 +70,14 @@ public class ProductService {
         return optionalProduct.get();
     }
 
-    public Product createProduct(ProductDto productDto, Category category, MultipartFile[] files) throws IOException {
+    public ProductDto createProduct(ProductDto productDto, Category category, MultipartFile[] files) throws IOException {
         String uploadDir = "./images/products";
 
         ProductDetail productDetail = new ProductDetail();
         productDetail.setColor(productDto.getDetail().getColor());
         productDetail.setSize(productDto.getDetail().getSize());
 
-        Product product = new Product();
-
-        product.setName(productDto.getName());
-        product.setCategory(category);
-        product.setPrice(productDto.getPrice());
-        product.setQuantity(productDto.getQuantity());
-        product.setDescription(productDto.getDescription());
-
-        product.setDetail(productDetailRepository.save(productDetail));
+        Product product = ProductMapper.mapToProduct(productDto);
 
         List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
 
@@ -95,10 +85,16 @@ public class ProductService {
         product.setImage2(fileNames.get(1));
         product.setImage3(fileNames.get(2));
 
-        return productRepository.save(product);
+        product.setDetail(productDetailRepository.save(productDetail));
+        product.setCategory(category);
+
+        Product savedProduct = productRepository.save(product);
+        return ProductMapper.mapToProductDto(savedProduct);
+
+//        return productRepository.save(product);
     }
 
-    public Product updateProduct(ProductDto productDto, Long productId, MultipartFile[] files) throws Exception {
+    public ProductDto updateProduct(ProductDto productDto, Long productId, Category category,MultipartFile[] files) throws Exception {
         String uploadDir = "./images/products";
         Optional<Product> optionalProduct  = productRepository.findById(productId);
 
@@ -109,9 +105,6 @@ public class ProductService {
 
         Product existingProduct  = optionalProduct.get();
 
-        Category category = categoryService.getCategoryById(productDto.getCategoryId());
-        existingProduct.setCategory(category);
-
         existingProduct.setName(productDto.getName());
         existingProduct.setPrice(productDto.getPrice());
         existingProduct.setQuantity(productDto.getQuantity());
@@ -120,13 +113,17 @@ public class ProductService {
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage1());
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage2());
         FileUploadUtil.deleteFile(uploadDir, existingProduct.getImage3());
+
+        existingProduct.setCategory(category);
+
         List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
 
         existingProduct.setImage1(fileNames.get(0));
         existingProduct.setImage2(fileNames.get(1));
         existingProduct.setImage3(fileNames.get(2));
 
-        return productRepository.save(existingProduct);
+        Product updatedProduct = productRepository.save(existingProduct);
+        return ProductMapper.mapToProductDto(updatedProduct);
     }
 
     public String deleteProduct(Long productId) throws Exception {

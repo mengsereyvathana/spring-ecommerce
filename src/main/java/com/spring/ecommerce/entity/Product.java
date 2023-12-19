@@ -27,12 +27,11 @@ public class Product {
     private String image2;
     private String image3;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "detail_id", referencedColumnName = "id")
     private ProductDetail detail;
 
     @ManyToOne
-    @JsonIgnoreProperties("products")
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 }

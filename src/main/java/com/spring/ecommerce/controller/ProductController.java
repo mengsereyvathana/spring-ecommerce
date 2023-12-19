@@ -25,27 +25,26 @@ public class ProductController {
     private final CategoryRepository categoryRepository;
 
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getProducts() {
-        List<ProductDto> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<List<ProductDto>>> getAllProducts() {
+        return new ResponseEntity<>(new ApiResponse<>(true, "product items", productService.getAllProducts()), HttpStatus.OK);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Product>> createProduct(@ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws IOException {
-        Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
+    @PostMapping("/create/{categoryId}")
+    public ResponseEntity<ApiResponse<ProductDto>> createProduct(@PathVariable("categoryId") Long categoryId, @ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws IOException {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         if (optionalCategory.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exist", null), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(new ApiResponse<>(true, "Product is added", productService.createProduct(productDto, optionalCategory.get(), files)), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable("id") Long productId, @ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws Exception {
-        Optional<Category> optionalCategory = categoryRepository.findById(productDto.getCategoryId());
+    @PutMapping("/update/{productId}/{categoryId}")
+    public ResponseEntity<ApiResponse<ProductDto>> updateProduct(@PathVariable("productId") Long productId, @PathVariable("categoryId") Long categoryId, @ModelAttribute ProductDto productDto, @RequestParam("imageFiles") MultipartFile[] files) throws Exception {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
         if (optionalCategory.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse<>(false, "Category does not exist", null), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ApiResponse<>(true, "Product is updated", productService.updateProduct(productDto, productId, files)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(true, "Product is updated", productService.updateProduct(productDto, productId, optionalCategory.get(), files)), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")

@@ -1,6 +1,7 @@
 package com.spring.ecommerce.controller;
 
 import com.spring.ecommerce.common.ApiResponse;
+import com.spring.ecommerce.dto.CartDto;
 import com.spring.ecommerce.dto.ProductDto;
 import com.spring.ecommerce.entity.Cart;
 import com.spring.ecommerce.service.CartService;
@@ -20,12 +21,12 @@ public class CartController {
     private final ProductService productService;
 
     @GetMapping("/get-cart-by-username")
-    public ResponseEntity<ApiResponse<Cart>> getCartByUsername(){
+    public ResponseEntity<ApiResponse<CartDto>> getCartByUsername(){
         return new ResponseEntity<>(new ApiResponse<>(true, "Cart of user", cartService.getCartByUsername()), HttpStatus.OK);
     }
 
     @PostMapping("/add-to-cart/{productId}")
-    public ResponseEntity<ApiResponse<Cart>> addToCart(@PathVariable(name = "productId") Long productId,  @RequestParam(value = "quantity", required = false, defaultValue = "1") int quantity) throws IOException {
+    public ResponseEntity<ApiResponse<CartDto>> addToCart(@PathVariable(name = "productId") Long productId,  @RequestParam(value = "quantity", required = false, defaultValue = "1") int quantity) throws IOException {
         ProductDto productDto = productService.getById(productId);
         int cartQuantity = cartService.getCartQuantity(productDto);
         if(cartQuantity == 0){
@@ -38,7 +39,7 @@ public class CartController {
     }
 
     @PostMapping("/minus-from-cart/{productId}")
-    public ResponseEntity<ApiResponse<Cart>> minusFromCart(@PathVariable(name = "productId") Long productId,  @RequestParam(value = "quantity", required = false, defaultValue = "1") int quantity) throws IOException {
+    public ResponseEntity<ApiResponse<CartDto>> minusFromCart(@PathVariable(name = "productId") Long productId,  @RequestParam(value = "quantity", required = false, defaultValue = "1") int quantity) throws IOException {
         ProductDto productDto = productService.getById(productId);
         int cartQuantity = cartService.getCartQuantity(productDto);
         if(cartQuantity == 1){
@@ -54,7 +55,7 @@ public class CartController {
     }
 
     @PutMapping("/update-cart-item/{productId}")
-    public ResponseEntity<ApiResponse<Cart>> updateCartItem(@PathVariable(name = "productId") Long productId, @RequestParam int quantity) throws IOException {
+    public ResponseEntity<ApiResponse<CartDto>> updateCartItem(@PathVariable(name = "productId") Long productId, @RequestParam int quantity) throws IOException {
         ProductDto productDto = productService.getById(productId);
         if(productDto.getQuantity() < quantity){
             return new ResponseEntity<>(new ApiResponse<>(true, "Quantity is limited", null), HttpStatus.OK);
