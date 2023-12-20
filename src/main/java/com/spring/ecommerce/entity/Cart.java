@@ -30,6 +30,4 @@ public class Cart {
 
     private double totalPrice;
     private int totalItems;
-
-
 }

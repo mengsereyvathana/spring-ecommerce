@@ -26,9 +26,9 @@ public class CategoryMapper {
         categoryDto.setName(category.getName());
         categoryDto.setDescription(category.getDescription());
         categoryDto.setImage(category.getImage());
-        categoryDto.setProducts(category.getProducts().stream()
+        categoryDto.setProducts(category.getProducts() != null ? category.getProducts().stream()
                 .map(ProductMapper::mapToProductDto)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()) : null);
 
         return categoryDto;
     }
