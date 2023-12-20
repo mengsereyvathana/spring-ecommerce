@@ -7,6 +7,7 @@ import com.spring.ecommerce.entity.Product;
 import com.spring.ecommerce.entity.ProductDetail;
 import com.spring.ecommerce.exception.ProductNotExistsException;
 import com.spring.ecommerce.mapper.CategoryMapper;
+import com.spring.ecommerce.mapper.ProductDetailMapper;
 import com.spring.ecommerce.mapper.ProductMapper;
 import com.spring.ecommerce.repository.ProductDetailRepository;
 import com.spring.ecommerce.repository.ProductRepository;
@@ -26,12 +27,11 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryService categoryService;
     private final ProductDetailRepository productDetailRepository;
 
     public List<ProductDto> getAllProducts() {
-        List<Product> categories = productRepository.findAll();
-        return categories.stream().map(ProductMapper::mapToProductDto).collect(Collectors.toList());
+        List<Product> products = productRepository.findAll();
+        return products.stream().map(ProductMapper::mapToProductDto).collect(Collectors.toList());
     }
 
 
@@ -77,6 +77,8 @@ public class ProductService {
         productDetail.setColor(productDto.getDetail().getColor());
         productDetail.setSize(productDto.getDetail().getSize());
 
+        productDto.setCategory(CategoryMapper.mapToCategoryDto(category));
+
         Product product = ProductMapper.mapToProduct(productDto);
 
         List<String> fileNames = FileUploadUtil.saveAllFiles(uploadDir, files, true);
@@ -90,8 +92,6 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
         return ProductMapper.mapToProductDto(savedProduct);
-
-//        return productRepository.save(product);
     }
 
     public ProductDto updateProduct(ProductDto productDto, Long productId, Category category,MultipartFile[] files) throws Exception {
@@ -153,7 +153,8 @@ public class ProductService {
         productDto.setPrice(product.getPrice());
         productDto.setDescription(product.getDescription());
         productDto.setQuantity(product.getQuantity());
-        productDto.setCategory(product.getCategory());
+        productDto.setDetail(ProductDetailMapper.mapToProductDetailDto(product.getDetail()));
+        productDto.setCategory(CategoryMapper.mapToCategoryDto(product.getCategory()));
         productDto.setImage1(product.getImage1());
         productDto.setImage2(product.getImage2());
         productDto.setImage3(product.getImage3());

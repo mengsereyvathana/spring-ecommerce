@@ -29,7 +29,7 @@ public class CartService {
         String userEmail = JwtAuthenticationFilter.CURRENT_USER;
         User user = userRepository.findByEmail(userEmail).orElseThrow();
 
-        return cartToDto(user.getCart());
+        return CartMapper.mapToCartDto(user.getCart());
     }
 
     public CartDto addToCart(ProductDto productDto, int quantity) throws IOException {
@@ -142,7 +142,9 @@ public class CartService {
         shoppingCart.setTotalItems(totalItem);
         shoppingCart.setUser(user);
 
-        return cartToDto(cartRepository.save(shoppingCart));
+        Cart savedCart = cartRepository.save(shoppingCart);
+        return CartMapper.mapToCartDto(savedCart);
+
     }
 
     public CartDto updateCartItem(ProductDto productDto, int quantity) {
@@ -163,7 +165,8 @@ public class CartService {
         cart.setTotalPrice(totalPrice);
         cart.setTotalItems(totalItem);
 
-        return cartToDto(cartRepository.save(cart));
+        Cart updatedCart = cartRepository.save(cart);
+        return CartMapper.mapToCartDto(updatedCart);
     }
 
     public String removeItemFromCart(ProductDto productDto) {
@@ -260,26 +263,26 @@ public class CartService {
         return cartItem.getQuantity();
     }
 
-    private Product dtoToProduct(ProductDto productDto) {
-        Product product = new Product();
-        product.setId(productDto.getId());
-        product.setName(productDto.getName());
-        product.setPrice(productDto.getPrice());
-        product.setQuantity(productDto.getQuantity());
-        product.setDescription(productDto.getDescription());
-        product.setImage1(productDto.getImage1());
-        product.setImage2(productDto.getImage2());
-        product.setImage3(productDto.getImage3());
-        product.setCategory(productDto.getCategory());
-        return product;
-    }
+//    private Product dtoToProduct(ProductDto productDto) {
+//        Product product = new Product();
+//        product.setId(productDto.getId());
+//        product.setName(productDto.getName());
+//        product.setPrice(productDto.getPrice());
+//        product.setQuantity(productDto.getQuantity());
+//        product.setDescription(productDto.getDescription());
+//        product.setImage1(productDto.getImage1());
+//        product.setImage2(productDto.getImage2());
+//        product.setImage3(productDto.getImage3());
+//        product.setCategory(productDto.getCategory());
+//        return product;
+//    }
 
-    private CartDto cartToDto(Cart cart) {
-        CartDto cartDto = new CartDto();
-        cartDto.setCartItems(cart.getCartItems());
-        cartDto.setId(cart.getId());
-        cartDto.setTotalItems(cart.getTotalItems());
-        cartDto.setTotalPrice(cart.getTotalPrice());
-        return cartDto;
-    }
+//    private CartDto cartToDto(Cart cart) {
+//        CartDto cartDto = new CartDto();
+//        cartDto.setCartItems(cart.getCartItems());
+//        cartDto.setId(cart.getId());
+//        cartDto.setTotalItems(cart.getTotalItems());
+//        cartDto.setTotalPrice(cart.getTotalPrice());
+//        return cartDto;
+//    }
 }

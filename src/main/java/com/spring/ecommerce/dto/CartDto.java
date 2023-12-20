@@ -1,6 +1,7 @@
 package com.spring.ecommerce.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.spring.ecommerce.entity.CartItem;
@@ -18,9 +19,10 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDto {
     private Long id;
+
     @JsonManagedReference
-    @JsonIgnoreProperties("products")
-    private List<CartItem> cartItems;
+    private List<CartItemDto> cartItems;
+
     private double totalPrice;
     private int totalItems;
 

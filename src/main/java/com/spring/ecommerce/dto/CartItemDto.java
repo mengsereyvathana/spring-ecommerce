@@ -1,6 +1,8 @@
 package com.spring.ecommerce.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.spring.ecommerce.entity.Cart;
 import com.spring.ecommerce.entity.Product;
 import jakarta.persistence.CascadeType;
@@ -18,8 +20,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CartItemDto {
     private Long id;
+
     @JsonBackReference
-    private Cart cart;
+    @JsonIgnore
+    private CartDto cart;
+
     private Product product;
     private Integer quantity;
     private double unitPrice;

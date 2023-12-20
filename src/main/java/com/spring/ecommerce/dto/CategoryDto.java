@@ -3,6 +3,7 @@ package com.spring.ecommerce.dto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.spring.ecommerce.entity.Product;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,5 +25,5 @@ public class CategoryDto {
     private @NotNull String image;
 
     @JsonIgnoreProperties("category")
-    private List<Product> products;
+    private List<ProductDto> products;
 }
