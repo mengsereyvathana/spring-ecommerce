@@ -7,12 +7,16 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.Objects;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Table(name = "products")
 public class Product {
     @Id
@@ -35,5 +39,12 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     @JsonIgnoreProperties("products")
+    @EqualsAndHashCode.Exclude
     private Category category;
+
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id, name, price, description, quantity, image1, image2, image3, detail);
+//        // Exclude 'category' from hashCode to break circular reference
+//    }
 }

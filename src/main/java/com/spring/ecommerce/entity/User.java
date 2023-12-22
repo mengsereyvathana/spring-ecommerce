@@ -1,24 +1,23 @@
 package com.spring.ecommerce.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.spring.ecommerce.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
@@ -26,9 +25,7 @@ public class User implements UserDetails {
     private Long id;
 
     private String firstName;
-
     private String lastName;
-
     private String email;
 
     @JsonIgnore
@@ -41,7 +38,8 @@ public class User implements UserDetails {
     private List<Token> tokens;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
     private Cart cart;
 
     @JsonIgnore
@@ -78,4 +76,9 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id, email);
+//    }
 }

@@ -34,7 +34,7 @@ public class CategoryController {
         if (!categoryService.findCategoryById(id)) {
             return new ResponseEntity<>(new ApiResponse<>(false, "category does not exists", null), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(new ApiResponse<>(true, "category has been updated", categoryService.updateCategory(id, categoryDto)), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(true, "category has been deleted", categoryService.updateCategory(id, categoryDto)), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")

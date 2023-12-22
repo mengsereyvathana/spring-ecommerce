@@ -19,12 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CartDto {
     private Long id;
-
-    @JsonManagedReference
     private List<CartItemDto> cartItems;
-
     private double totalPrice;
     private int totalItems;
-
-    //    private User user;
 }

@@ -21,7 +21,6 @@ import lombok.Setter;
 public class CartItemDto {
     private Long id;
 
-    @JsonBackReference
     @JsonIgnore
     private CartDto cart;
 
